@@ -1,0 +1,5 @@
+.env
+./codes
+./node_modules
+./output
+yarn.lock
