@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 //requiring only v4 remember the syntax of exporting v4 and renaming it to uuid for easy use
 const { generateFile } = require("./generatFile");
 const { executeCpp } = require("./executeCpp");
@@ -7,6 +8,10 @@ const mongoose = require("mongoose");
 const Job = require("./models/Job");
 
 const PORT = process.env.PORT || 9000;
+
+const app = express();
+app.use(express.urlencoded({ extended: true })); //to parse the data in usable format coming from req as post req
+app.use(cors);
 
 mongoose.connect(
   "mongodb+srv://daksh:daksh1234@cluster0.kqa9w.mongodb.net/?retryWrites=true&w=majority",
@@ -19,12 +24,8 @@ mongoose.connect(
   }
 );
 
-const app = express();
-app.use(express.urlencoded({ extended: true })); //to parse the data in usable format coming from req as post req
-
 app.get("/", (req, res) => {
-  res.json({ hello: "world" });
-  console.log(req.body);
+  res.json({ message: "hello world" });
 });
 
 app.post("/run", async (req, res) => {
@@ -32,6 +33,7 @@ app.post("/run", async (req, res) => {
   if (code === undefined)
     return res.status(400).json({ success: false, error: "Empty code body" });
   let job;
+  console.log(code);
   try {
     const filepath = await generateFile(language, code);
     job = await Job({ language, filepath }).save();
