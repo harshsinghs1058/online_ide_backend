@@ -1,5 +1,5 @@
 .env
-./codes
-./node_modules
-./output
+codes
+node_modules
+output
 yarn.lock
