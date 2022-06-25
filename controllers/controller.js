@@ -2,7 +2,7 @@ const Job = require("./../models/Job");
 const { generateFile } = require("./../generatFile");
 const { executeCpp } = require("./../execute_code/executeCpp");
 const { executePy } = require("./../execute_code/executePy");
-
+const { addJobToQueue } = require("./../jobQueue");
 const runCode = async (req, res) => {
   const { language = "cpp", code } = req.body;
 
@@ -10,33 +10,13 @@ const runCode = async (req, res) => {
     return res.status(400).json({ success: false, error: "Empty code body" });
   }
 
-  let job;
-  try {
-    const filepath = await generateFile(language, code);
-    job = await Job({ language, filepath }).save();
-    const jobid = job["_id"];
-    console.log(job);
-    res.status(201).json({ success: true, jobid });
-    job["startedAt"] = new Date();
-    if (language == "cpp") {
-      output = await executeCpp(filepath);
-    } else {
-      output = await executePy(filepath);
-    }
-    job["completedAt"] = new Date();
-    console.log(job["completedAt"]);
-    job["status"] = "success";
-    job["output"] = output;
-    await job.save();
-    console.log(filepath);
-  } catch (err) {
-    job["completedAt"] = new Date();
-    job["status"] = "error";
-    job["output"] = JSON.stringify(err);
-    await job.save();
-    console.log(err);
-    res.status(500).json(err);
-  }
+  // need to generate a c++ file with content from the request
+  const filepath = await generateFile(language, code);
+  // write into DB
+  const job = await new Job({ language, filepath }).save();
+  const jobId = job["_id"];
+  addJobToQueue(jobId);
+  res.status(201).json({ jobId });
 };
 
 const getStatus = async (req, res) => {
