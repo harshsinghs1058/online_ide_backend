@@ -16,26 +16,24 @@ const runCode = async (req, res) => {
     job = await Job({ language, filepath }).save();
     const jobid = job["_id"];
     console.log(job);
-    console.log(jobid);
     res.status(201).json({ success: true, jobid });
-    // let output;
-    // job["startedAt"] = new Date();
-    // if (language == "cpp") {
-    // output = await executeCpp(filepath);
-    // } else {
-    // output = await executePy(filepath);
-    // }
-    // job["completedAt"] = new Date();
-    // console.log(job["completedAt"]);
-    // job["status"] = "success";
-    // job["output"] = output;
-    // await job.save();
-    // console.log(filepath);
+    job["startedAt"] = new Date();
+    if (language == "cpp") {
+      output = await executeCpp(filepath);
+    } else {
+      output = await executePy(filepath);
+    }
+    job["completedAt"] = new Date();
+    console.log(job["completedAt"]);
+    job["status"] = "success";
+    job["output"] = output;
+    await job.save();
+    console.log(filepath);
   } catch (err) {
-    // job["completedAt"] = new Date();
-    // job["status"] = "error";
-    // job["output"] = JSON.stringify(err);
-    // await job.save();
+    job["completedAt"] = new Date();
+    job["status"] = "error";
+    job["output"] = JSON.stringify(err);
+    await job.save();
     console.log(err);
     res.status(500).json(err);
   }
@@ -43,6 +41,7 @@ const runCode = async (req, res) => {
 
 const getStatus = async (req, res) => {
   const jobId = req.query.id;
+  console.log(res);
   if (jobId === undefined) {
     return res
       .status(400)
