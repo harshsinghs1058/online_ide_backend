@@ -1,5 +1,5 @@
 const Queue = require("bull");
-
+const fs = require('fs');
 const Job = require("./models/Job");
 const { executeCpp } = require("./execute_code/executeCpp");
 const { executePy } = require("./execute_code/executePy");
@@ -23,17 +23,20 @@ jobQueue.process(NUM_WORKERS, async ({ data }) => {
     throw Error(`cannot find Job with id ${jobId}`);
   }
   try {
-    let output;
+    let output,outPath;
     job["startedAt"] = new Date();
     const timer = setTimeout(async () => {
       job["completedAt"] = new Date();
       job["output"] = JSON.stringify("Time limit exceded");
       job["status"] = "error";
+      fs.unlink(job["filepath"]);
       await job.save();
       return true;
     }, 3000);
     if (job.language === "cpp") {
-      output = await executeCpp(job.filepath);
+      let cpp = await executeCpp(job.filepath);
+      output = cpp[0];
+      outPath = cpp[1];
     } else if (job.language === "py") {
       output = await executePy(job.filepath);
     }
@@ -41,6 +44,9 @@ jobQueue.process(NUM_WORKERS, async ({ data }) => {
     job["completedAt"] = new Date();
     job["output"] = output;
     job["status"] = "success";
+    fs.unlink(job["filepath"], () => {
+      console.log("deleted code file");
+    });
     await job.save();
     console.log("OutputSend\n");
     return true;
@@ -48,6 +54,7 @@ jobQueue.process(NUM_WORKERS, async ({ data }) => {
     clearTimeout(timer);
     job["completedAt"] = new Date();
     job["output"] = JSON.stringify(err);
+    fs.unlink(job["filepath"]);
     job["status"] = "error";
     await job.save();
     console.log(job["output"]);

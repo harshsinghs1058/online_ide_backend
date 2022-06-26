@@ -17,7 +17,7 @@ const executeCpp = (filepath) => {
       (error, stdout, stderr) => {
         error && reject({ error, stderr });
         stderr && reject(stderr);
-        resolve(stdout);
+        resolve([stdout,filepath]);
       }
     );
   });

@@ -1,7 +1,5 @@
 input feature
 deadend code
-wrong id in status
-wrong language input error
-delete code and output file after completion
+delete output file after completion
 
 cant handle sleep codes - (tried cpp one)

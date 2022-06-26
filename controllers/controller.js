@@ -1,7 +1,5 @@
 const Job = require("./../models/Job");
 const { generateFile } = require("./../generatFile");
-const { executeCpp } = require("./../execute_code/executeCpp");
-const { executePy } = require("./../execute_code/executePy");
 const { addJobToQueue } = require("./../jobQueue");
 const runCode = async (req, res) => {
   console.log("\n*************************\n");
@@ -9,6 +7,11 @@ const runCode = async (req, res) => {
   if (code === undefined) {
     return res.status(400).json({ success: false, error: "Empty code body" });
   }
+  if (language != "cpp" && language != "c" && language != "python")
+  {
+    return res.status(400).json({ success: false, error: "language is not supported" });
+    }
+  
 
   // need to generate a c++ file with content from the request
   const filepath = await generateFile(language, code);
@@ -27,13 +30,18 @@ const getStatus = async (req, res) => {
       .status(400)
       .json({ success: false, error: "missing id query param" });
   }
-  const job = await Job.findById(jobId); //find inside the db
+  try {
+    const job = await Job.findById(jobId); //find inside the db
 
-  if (job === undefined) {
+    if (job === undefined) {
+      return res.status(400).json({ success: false, error: "couldn't find job" });
+    }
+
+    return res.status(200).json({ success: true, job });
+  }
+  catch (e) {
     return res.status(400).json({ success: false, error: "couldn't find job" });
   }
-
-  return res.status(200).json({ success: true, job });
 };
 exports.runCode = runCode;
 exports.getStatus = getStatus;
