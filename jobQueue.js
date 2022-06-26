@@ -30,6 +30,7 @@ jobQueue.process(NUM_WORKERS, async ({ data }) => {
       job["output"] = JSON.stringify("Time limit exceded");
       job["status"] = "error";
       await job.save();
+      return true;
     }, 3000);
     if (job.language === "cpp") {
       output = await executeCpp(job.filepath);
