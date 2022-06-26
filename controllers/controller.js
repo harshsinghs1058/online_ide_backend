@@ -4,8 +4,8 @@ const { executeCpp } = require("./../execute_code/executeCpp");
 const { executePy } = require("./../execute_code/executePy");
 const { addJobToQueue } = require("./../jobQueue");
 const runCode = async (req, res) => {
+  console.log("\n*************************\n");
   const { language = "cpp", code } = req.body;
-
   if (code === undefined) {
     return res.status(400).json({ success: false, error: "Empty code body" });
   }
@@ -14,6 +14,7 @@ const runCode = async (req, res) => {
   const filepath = await generateFile(language, code);
   // write into DB
   const job = await new Job({ language, filepath }).save();
+  console.log(job["_id"]);
   const jobId = job["_id"];
   addJobToQueue(jobId);
   res.status(201).json({ jobId });
@@ -21,7 +22,6 @@ const runCode = async (req, res) => {
 
 const getStatus = async (req, res) => {
   const jobId = req.query.id;
-  console.log(res);
   if (jobId === undefined) {
     return res
       .status(400)
