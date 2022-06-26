@@ -8,13 +8,12 @@ const jobQueue = new Queue("job-runner-queue");
 const NUM_WORKERS = 5;
 
 jobQueue.process(NUM_WORKERS, async ({ data }) => {
-
   const jobId = data.id;
   const job = await Job.findById(jobId);
   if (job === undefined) {
     throw Error(`cannot find Job with id ${jobId}`);
   }
-    try {
+  try {
     let output;
     job["startedAt"] = new Date();
     if (job.language === "cpp") {
