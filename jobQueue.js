@@ -1,14 +1,12 @@
 const Queue = require("bull");
-const fs = require('fs');
+const fs = require("fs");
 const Job = require("./models/Job");
 const { executeCpp } = require("./execute_code/executeCpp");
 const { executePy } = require("./execute_code/executePy");
 
-const jobQueue = new Queue("job-runner-queue", {
-  redis: {
-    port: 6379,
-    host: "127.0.0.1",
-  },
+let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+
+const jobQueue = new Queue("job-runner-queue", REDIS_URL, {
   limiter: {
     duration: 3000,
     max: 4,
@@ -23,7 +21,7 @@ jobQueue.process(NUM_WORKERS, async ({ data }) => {
     throw Error(`cannot find Job with id ${jobId}`);
   }
   try {
-    let output,outPath;
+    let output, outPath;
     job["startedAt"] = new Date();
     const timer = setTimeout(async () => {
       job["completedAt"] = new Date();
