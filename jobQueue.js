@@ -25,36 +25,36 @@ jobQueue.process(NUM_WORKERS, async ({ data }) => {
   try {
     let output,outPath;
     job["startedAt"] = new Date();
-    const timer = setTimeout(async () => {
-      job["completedAt"] = new Date();
-      job["output"] = JSON.stringify("Time limit exceded");
-      job["status"] = "error";
-      fs.unlink(job["filepath"]);
-      await job.save();
-      return true;
-    }, 3000);
-    if (job.language === "cpp") {
-      let cpp = await executeCpp(job.filepath);
-      output = cpp[0];
-      outPath = cpp[1];
+    // const timer = setTimeout(async () => {
+    //   job["completedAt"] = new Date();
+    //   job["output"] = JSON.stringify("Time limit exceded");
+    //   job["status"] = "error";
+    //   fs.unlink(job["filepath"]);
+    //   await job.save();
+    //   return true;
+    // }, 3000);
+    if (job.language === "cpp" || job.language==="c") {
+      output= await executeCpp(job.filepath,job.inputfilename);
     } else if (job.language === "py") {
       output = await executePy(job.filepath);
     }
-    clearTimeout(timer);
+    //clearTimeout(timer);
     job["completedAt"] = new Date();
     job["output"] = output;
     job["status"] = "success";
-    fs.unlink(job["filepath"], () => {
+    fs.unlinkSync(job["filepath"], () => {
       console.log("deleted code file");
     });
     await job.save();
     console.log("OutputSend\n");
     return true;
   } catch (err) {
-    clearTimeout(timer);
+    //clearTimeout(timer);
     job["completedAt"] = new Date();
     job["output"] = JSON.stringify(err);
-    fs.unlink(job["filepath"]);
+    fs.unlinkSync(job["filepath"], () => {
+      console.log("\nfile deleted\n");
+    });
     job["status"] = "error";
     await job.save();
     console.log(job["output"]);
