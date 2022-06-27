@@ -1,5 +1,2 @@
 input feature
-deadend code
 delete output file after completion
-
-cant handle sleep codes - (tried cpp one)
