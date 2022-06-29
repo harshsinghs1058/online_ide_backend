@@ -4,3 +4,4 @@ node_modules
 outputs
 yarn.lock
 package-lock.json
+inputCompiler

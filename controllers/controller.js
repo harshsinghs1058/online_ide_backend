@@ -6,11 +6,9 @@ const { addJobToQueue } = require("./../jobQueue");
 //req: code, language({cpp,c,py}), input
 //res: jobId
 const runCode = async (req, res) => {
-  console.log("\n*************************\n");
   const { language = "cpp", code, input = "" } = req.body;
-  if (code === undefined) {
+  if (code === undefined)
     return res.status(400).json({ success: false, error: "Empty code body" });
-  }
   if (language != "cpp" && language != "c" && language != "py") {
     return res
       .status(400)
@@ -19,8 +17,7 @@ const runCode = async (req, res) => {
 
   // need to generate a c++ file with content from the request
   const { filePath, inputFilePath } = await generateFile(language, code, input);
-  console.log(filePath);
-  console.log(inputFilePath);
+
   // write into DB
   const job = await new Job({ language, filePath, inputFilePath }).save();
   console.log(job["_id"]);

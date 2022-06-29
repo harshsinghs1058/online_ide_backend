@@ -3,6 +3,7 @@ const fs = require("fs");
 const Job = require("./models/Job");
 const { executeCpp } = require("./execute_code/executeCpp");
 const { executePy } = require("./execute_code/executePy");
+const { obliterate } = require("bull/lib/scripts");
 
 let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 
@@ -24,7 +25,7 @@ jobQueue.process(NUM_WORKERS, async ({ data }) => {
     job.startedAt = new Date();
 
     if (job.language === "cpp" || job.language === "c")
-      output = await executeCpp(job.filePath, job.inputFilePath);
+      output = await executeCpp(job.filePath, job.inputFilePath, jobId);
     else if (job.language === "py")
       output = await executePy(job.filePath, job.inputFilePath);
 
@@ -49,9 +50,10 @@ module.exports = {
 const jobCompleted = async (output, status, job) => {
   job.completedAt = new Date();
   job.output = JSON.stringify(output);
-  console.log(`\noutput: ${job.output}`);
+  console.log(`\n${status}: ${job.output}`);
   job.status = status;
   fs.unlinkSync(job.filePath);
   fs.unlinkSync(job.inputFilePath);
+  if (job.language === "cpp") fs.unlinkSync(`.\\outputs\\${job["_id"]}.exe`);
   await job.save();
 };

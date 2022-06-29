@@ -1,4 +1,1 @@
-input feature of python left
-deadend code
-delete output file after completion
-
+deadend code - will rewrite
