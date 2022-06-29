@@ -4,9 +4,9 @@ const JobSchema = new mongoose.Schema({
   language: {
     type: String,
     required: true,
-    enum: ["cpp", "py","c"],
+    enum: ["cpp", "py", "c"],
   },
-  filepath: {
+  filePath: {
     type: String,
     required: true,
   },
@@ -25,14 +25,13 @@ const JobSchema = new mongoose.Schema({
     default: "pending",
     enum: ["pending", "success", "error"],
   },
-  inputfilename: {
+  inputFilePath: {
     type: String,
     //required: true,
   },
   output: {
     type: String,
   },
-
 });
 
 // default export
