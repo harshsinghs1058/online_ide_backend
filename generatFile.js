@@ -11,13 +11,13 @@ if (!fs.existsSync(dirCodesInput)) {
 }
 const generateFile = async (format, content, input) => {
   const jobid = uuid();
-  const filename = `${jobid}.${format}`;
-  const inputfilename = `${jobid}.txt`;
-  const filepath = path.join(dirCodes, filename);
-  const inputfilepath = path.join(dirCodesInput, inputfilename);
-  fs.writeFileSync(filepath, content);
-  fs.writeFileSync(inputfilepath, input);
-  return { filepath, inputfilepath };
+  const fileName = `${jobid}.${format}`;
+  const inputFileName = `${jobid}.txt`;
+  const filePath = path.join(dirCodes, fileName);
+  const inputFilePath = path.join(dirCodesInput, inputFileName);
+  fs.writeFileSync(filePath, content);
+  fs.writeFileSync(inputFilePath, input);
+  return { filePath, inputFilePath };
 };
 module.exports = {
   generateFile,
