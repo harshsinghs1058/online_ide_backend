@@ -17,54 +17,26 @@ const NUM_WORKERS = 5;
 jobQueue.process(NUM_WORKERS, async ({ data }) => {
   const jobId = data.id;
   const job = await Job.findById(jobId);
-  if (job === undefined) {
-    throw Error(`cannot find Job with id ${jobId}`);
-  }
+  if (job === undefined) throw Error(`cannot find Job with id ${jobId}`);
+
   try {
-    let output, outPath;
-    job["startedAt"] = new Date();
-    // const timer = setTimeout(async () => {
-    //   job["completedAt"] = new Date();
-    //   job["output"] = JSON.stringify("Time limit exceded");
-    //   job["status"] = "error";
-    //   fs.unlink(job["filepath"]);
-    //   await job.save();
-    //   return true;
-    // }, 3000);
-    if (job.language === "cpp" || job.language==="c") {
-      output= await executeCpp(job.filepath,job.inputfilename);
-    } else if (job.language === "py") {
-      output = await executePy(job.filepath);
-    }
-    //clearTimeout(timer);
-    job["completedAt"] = new Date();
-    job["output"] = output;
-    job["status"] = "success";
-    fs.unlinkSync(job["filepath"], () => {
-      console.log("deleted code file");
-    });
-    await job.save();
-    console.log("OutputSend\n");
+    let output;
+    job.startedAt = new Date();
+
+    if (job.language === "cpp" || job.language === "c")
+      output = await executeCpp(job.filePath, job.inputFilePath);
+    else if (job.language === "py")
+      output = await executePy(job.filePath, job.inputFilePath);
+
+    await jobCompleted(output, "success", job);
+
     return true;
   } catch (err) {
-    //clearTimeout(timer);
-    job["completedAt"] = new Date();
-    job["output"] = JSON.stringify(err);
-    fs.unlinkSync(job["filepath"], () => {
-      console.log("\nfile deleted\n");
-    });
-    job["status"] = "error";
-    await job.save();
-    console.log(job["output"]);
-    throw Error(JSON.stringify(err));
+    await jobCompleted(err, "error", job);
   }
 });
 
-jobQueue.on("failed", (error) => {
-  console.error(error.data.id, error.failedReason);
-});
-
-const addJobToQueue = async (jobId) => {
+const addJobToQueue = (jobId) => {
   jobQueue.add({
     id: jobId,
   });
@@ -72,4 +44,14 @@ const addJobToQueue = async (jobId) => {
 
 module.exports = {
   addJobToQueue,
+};
+
+const jobCompleted = async (output, status, job) => {
+  job.completedAt = new Date();
+  job.output = JSON.stringify(output);
+  console.log(`\noutput: ${job.output}`);
+  job.status = status;
+  fs.unlinkSync(job.filePath);
+  fs.unlinkSync(job.inputFilePath);
+  await job.save();
 };
